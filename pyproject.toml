@@ -1,0 +1,14 @@
+[project]
+name = "ble-hrm-server"
+version = "0.1.0"
+description = "A MCP server, which serve as a BLE heart rate monitoring to connect with a HRM device."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "bleak>=0.22.3",
+    "dotenv>=0.9.9",
+    "fastmcp>=2.3.4",
+    "matplotlib>=3.10.3",
+    "pytest>=8.3.5",
+    "qiniu>=7.16.0",
+]
