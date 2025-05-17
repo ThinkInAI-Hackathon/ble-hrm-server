@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "A MCP server, which serve as a BLE heart rate monitoring to connect with a HRM device."
 readme = "README.md"
 requires-python = ">=3.12"
+authors = [{ name = "GENE WU." }]
+maintainers = [{ name = "Gene Wu", email = "genewoo@gmail.com" }]
+keywords = ["ble", "hrm", "mcp", "llm"]
 dependencies = [
     "bleak>=0.22.3",
     "dotenv>=0.9.9",
@@ -12,3 +15,13 @@ dependencies = [
     "pytest>=8.3.5",
     "qiniu>=7.16.0",
 ]
+
+[tool.uv]
+dev-dependencies = ["pytest>=8.0.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+pythonpath = ["src"]
