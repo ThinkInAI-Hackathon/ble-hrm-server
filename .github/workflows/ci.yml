@@ -25,7 +25,7 @@ jobs:
           pip install uv
           uv venv
           uv pip install -r pyproject.toml
-          uv pip install -r pyproject.toml --dev
+          uv pip install -r pyproject.toml --group dev
 
       - name: Run tests with coverage
         run: |
