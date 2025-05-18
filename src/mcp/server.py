@@ -2,10 +2,6 @@ from fastmcp import FastMCP, FunctionResource
 
 from mcp.bt_client import BtClient
 
-
-
-
-
 mcp = FastMCP(
     name="Bluetooth HRM MCP Server",
     instructions="""MCP server for Bluetooth Heart Rate Monitor. Provides tools and resources for HRM data, evaluation, and statistics results.
