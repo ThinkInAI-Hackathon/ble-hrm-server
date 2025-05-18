@@ -23,12 +23,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install uv
+          uv venv
           uv pip install -r pyproject.toml
 
       - name: Run tests with coverage
         run: |
-          coverage run -m pytest
-          coverage xml
+          uv coverage run -m pytest
+          uv coverage xml
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
