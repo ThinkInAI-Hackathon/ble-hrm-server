@@ -3,7 +3,7 @@ name = "ble-hrm-server"
 version = "0.1.0"
 description = "A MCP server, which serve as a BLE heart rate monitoring to connect with a HRM device."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.8,<3.14"
 authors = [{ name = "GENE WU." }]
 maintainers = [{ name = "Gene Wu", email = "genewoo@gmail.com" }]
 keywords = ["ble", "hrm", "mcp", "llm"]
