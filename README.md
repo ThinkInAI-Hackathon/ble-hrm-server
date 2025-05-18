@@ -1,6 +1,16 @@
 # ble-hrm-server
 A MCP server, which serve as a BLE heart rate monitoring to connect with a HRM device.
 
+# Build Status
+[![CI](https://github.com/ThinkInAI-Hackathon/ble-hrm-server/actions/workflows/ci.yml/badge.svg)](https://github.com/ThinkInAI-Hackathon/ble-hrm-server/actions/workflows/ci.yml)
+
+
+# Usage
+
+```bash
+uv run src/mcp/server.py
+```
+
 # MCP Definition
 
 ## Resources
