@@ -52,7 +52,7 @@ async def test_monitoring_heart_rate_creates_task(bt_client):
             hasattr(arg, "cr_code") and arg.cr_code.co_name == "background_monitor"
             for arg in called_args
         )
-        await dummy_task  # Only await the real asyncio task
+        dummy_task.cancel()  # Only await the real asyncio task
 
 @pytest.mark.asyncio
 async def test_monitoring_heart_rate_already_connected(bt_client):

@@ -17,7 +17,11 @@ dependencies = [
 ]
 
 [tool.uv]
-dev-dependencies = ["pytest>=8.0.0"]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "coverage>=7.0.0",
+    "pytest-asyncio>=0.24.0"
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -25,3 +29,4 @@ python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
 pythonpath = ["src"]
+asyncio_default_fixture_loop_scope = "session"
