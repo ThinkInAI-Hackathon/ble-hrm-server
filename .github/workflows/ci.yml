@@ -23,7 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install uv
-          uv pip install -r uv.lock
+          uv pip install -r pyproject.toml
 
       - name: Run tests with coverage
         run: |
