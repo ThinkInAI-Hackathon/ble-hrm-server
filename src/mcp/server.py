@@ -1,4 +1,5 @@
-from fastmcp import FastMCP, FunctionResource
+from fastmcp import FastMCP
+from fastmcp.resources import FunctionResource
 
 from mcp.bt_client import BtClient
 
