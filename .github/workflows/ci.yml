@@ -40,6 +40,15 @@ jobs:
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
 
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: ${{ always() }}
+        with:
+          name: Test Report
+          reporter: java-junit
+          path: junit/test-results.xml
+
       - name: Run tests with coverage
         run: |
           uv run coverage run -m pytest
