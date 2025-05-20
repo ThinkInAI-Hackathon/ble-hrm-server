@@ -1,7 +1,10 @@
-import pytest
 import time
 from collections import deque
+
+import pytest
+
 from mcp.ts_db import TsDB
+
 
 def test_insert_and_latest():
     db = TsDB(maxlen=3)
@@ -13,6 +16,7 @@ def test_insert_and_latest():
     # maxlen=3, so the first entry should be dropped
     assert db.latest() == (4.0, 40.0)
     assert list(db.data) == [(2.0, 20.0), (3.0, 30.0), (4.0, 40.0)]
+
 
 def test_query():
     db = TsDB()
@@ -26,6 +30,7 @@ def test_query():
     result = db.query(4.0, 5.0)
     assert result == []
 
+
 def test_avg_from():
     db = TsDB()
     db.insert(1.0, 10.0)
@@ -38,11 +43,12 @@ def test_avg_from():
     with pytest.raises(ZeroDivisionError):
         db.avg_from(4.0)
 
+
 def test_empty_latest():
     db = TsDB()
-    assert db.latest() is None 
-    
-    
+    assert db.latest() is None
+
+
 def test_with_real_time():
     COUNT = 100
     AVERAGE = (0 + COUNT - 1) / 2
@@ -52,8 +58,9 @@ def test_with_real_time():
         db.insert(time.time(), i)
         time.sleep(0.001)
     assert db.avg_from(from_time) == AVERAGE
-    _,value = db.latest()
+    _, value = db.latest()
     assert value == COUNT - 1
+
 
 def test_clear():
     db = TsDB()
@@ -64,6 +71,7 @@ def test_clear():
     assert len(db.data) == 0
     assert db.latest() is None
     assert db.query(0, 10) == []
+
 
 def test_avg():
     db = TsDB()
@@ -80,6 +88,7 @@ def test_avg():
     with pytest.raises(ZeroDivisionError):
         db.avg(4.0, 5.0)
 
+
 def test_time_bucket():
     db = TsDB()
     db.insert(1.0, 10.0)
@@ -93,4 +102,5 @@ def test_time_bucket():
     assert buckets == [(0.0, 0.0), (1.0, 11.0), (2.0, 21.0), (3.0, 31.0)]
     buckets = db.time_bucket(1.0, 4.0, 0.5)
     assert len(buckets) == 6
-    assert buckets == [(1.0, 10.0), (1.5, 12.0), (2.0, 20.0), (2.5, 22.0), (3.0, 30.0), (3.5, 32.0)]
+    assert buckets == [(1.0, 10.0), (1.5, 12.0), (2.0, 20.0),
+                       (2.5, 22.0), (3.0, 30.0), (3.5, 32.0)]

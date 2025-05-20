@@ -1,21 +1,23 @@
-import pytest
 import asyncio
 import math
 import time
-from unittest.mock import patch, MagicMock, AsyncMock, call
-from mcp.bt_client import BtClient, HEART_RATE_SERVICE_UUID
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
-import sys
-import types
+import pytest
+
+from mcp.bt_client import HEART_RATE_SERVICE_UUID, BtClient
+
 
 @pytest.fixture(autouse=True)
 def patch_print(monkeypatch):
     # Patch the custom print to avoid file writes during tests
     monkeypatch.setattr('mcp.bt_client.print', lambda msg: None)
 
+
 @pytest.fixture
 def bt_client():
     return BtClient()
+
 
 @pytest.mark.asyncio
 async def test_list_bluetooth_devices(bt_client):
@@ -32,13 +34,15 @@ async def test_list_bluetooth_devices(bt_client):
         assert result[fake_device.address]['name'] == 'TestHRM'
         assert result[fake_device.address]['rssi'] == -50
 
+
 @pytest.mark.asyncio
 async def test_monitoring_heart_rate_creates_task(bt_client):
     with patch('mcp.bt_client.BleakClient') as MockBleakClient, \
-         patch('mcp.bt_client.asyncio.create_task') as mock_create_task:
+            patch('mcp.bt_client.asyncio.create_task') as mock_create_task:
         mock_client = MockBleakClient.return_value
         mock_client.is_connected = False
         dummy_task = asyncio.create_task(asyncio.sleep(0))
+
         def side_effect(arg):
             # Return dummy_task for asyncio.sleep(0), MagicMock for background_monitor
             if getattr(arg, 'cr_code', None) and arg.cr_code.co_name == 'background_monitor':
@@ -54,14 +58,16 @@ async def test_monitoring_heart_rate_creates_task(bt_client):
         )
         dummy_task.cancel()  # Only await the real asyncio task
 
+
 @pytest.mark.asyncio
 async def test_monitoring_heart_rate_already_connected(bt_client):
     with patch('mcp.bt_client.BleakClient') as MockBleakClient, \
-         patch('mcp.bt_client.asyncio.create_task') as mock_create_task:
+            patch('mcp.bt_client.asyncio.create_task') as mock_create_task:
         mock_client = MockBleakClient.return_value
         mock_client.is_connected = True
         await bt_client.monitoring_heart_rate('device_id', duration=10)
         mock_create_task.assert_not_called()
+
 
 @pytest.mark.asyncio
 async def test_background_monitor(bt_client):
@@ -82,13 +88,14 @@ async def test_background_monitor(bt_client):
         mock_client.disconnect.assert_called_once()
         mock_clear.assert_called_once()
 
+
 @pytest.mark.parametrize('flags,expected_hr', [
     (0x00, 60),  # 8-bit
-    (0x01, 300), # 16-bit
+    (0x01, 300),  # 16-bit
 ])
 def test_count_heart_rate(bt_client, flags, expected_hr):
     with patch.object(bt_client.db, 'insert') as mock_insert, \
-         patch('time.time', return_value=123.0):
+            patch('time.time', return_value=123.0):
         if flags == 0x00:
             data = bytearray([flags, expected_hr])
         else:
@@ -96,11 +103,13 @@ def test_count_heart_rate(bt_client, flags, expected_hr):
         bt_client.count_heart_rate(1, data)
         mock_insert.assert_called_once_with(123.0, expected_hr)
 
+
 @pytest.mark.asyncio
 async def test_get_heart_rate(bt_client):
     with patch.object(bt_client.db, 'avg', return_value=59.1):
         result = await bt_client.get_heart_rate()
         assert result == {'avg_hr': math.ceil(59.1)}
+
 
 @pytest.mark.parametrize('data,expected', [
     ([(1, 60), (2, 70)], [{'time': 1, 'value': 60}, {'time': 2, 'value': 70}]),
@@ -108,9 +117,12 @@ async def test_get_heart_rate(bt_client):
 ])
 def test_get_heart_rate_bucket(bt_client, data, expected):
     with patch('time.time', return_value=10.0), \
-         patch.object(bt_client.db, 'time_bucket', return_value=[(d[0], d[1]) for d in data]):
-        result = bt_client.get_heart_rate_bucket(since_from=10.0, bucket_size=1.0)
-        assert result == [{'time': d[0], 'value': math.ceil(d[1])} for d in data]
+            patch.object(bt_client.db, 'time_bucket', return_value=[(d[0], d[1]) for d in data]):
+        result = bt_client.get_heart_rate_bucket(
+            since_from=10.0, bucket_size=1.0)
+        assert result == [
+            {'time': d[0], 'value': math.ceil(d[1])} for d in data]
+
 
 @pytest.mark.parametrize('data,expected', [
     ([], {'max_hr': 0}),
@@ -118,9 +130,10 @@ def test_get_heart_rate_bucket(bt_client, data, expected):
 ])
 def test_evaluate_active_heart_rate(bt_client, data, expected):
     with patch('time.time', return_value=100.0), \
-         patch.object(bt_client.db, 'query', return_value=data):
+            patch.object(bt_client.db, 'query', return_value=data):
         result = bt_client.evaluate_active_heart_rate()
         assert result == expected
+
 
 @patch('mcp.bt_client.upload_file', return_value='http://fake.url/chart.png')
 @patch('mcp.bt_client.plt')
@@ -137,4 +150,4 @@ def test_build_heart_rate_chart(mock_plt, mock_upload_file, bt_client):
     # Test no data case
     with patch.object(bt_client, 'get_heart_rate_bucket', return_value=[]):
         url = bt_client.build_heart_rate_chart(since_from=2.0)
-        assert url == '' 
+        assert url == ''
