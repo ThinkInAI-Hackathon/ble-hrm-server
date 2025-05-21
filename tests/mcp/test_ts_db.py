@@ -1,5 +1,4 @@
 import time
-from collections import deque
 
 import pytest
 
@@ -52,7 +51,7 @@ def test_empty_latest():
 def test_with_real_time():
     COUNT = 100
     AVERAGE = (0 + COUNT - 1) / 2
-    db = TsDB(COUNT+50)
+    db = TsDB(COUNT + 50)
     from_time = time.time()
     for i in range(COUNT):
         db.insert(time.time(), i)
@@ -102,5 +101,11 @@ def test_time_bucket():
     assert buckets == [(0.0, 0.0), (1.0, 11.0), (2.0, 21.0), (3.0, 31.0)]
     buckets = db.time_bucket(1.0, 4.0, 0.5)
     assert len(buckets) == 6
-    assert buckets == [(1.0, 10.0), (1.5, 12.0), (2.0, 20.0),
-                       (2.5, 22.0), (3.0, 30.0), (3.5, 32.0)]
+    assert buckets == [
+        (1.0, 10.0),
+        (1.5, 12.0),
+        (2.0, 20.0),
+        (2.5, 22.0),
+        (3.0, 30.0),
+        (3.5, 32.0),
+    ]

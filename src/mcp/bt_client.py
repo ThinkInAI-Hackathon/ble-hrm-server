@@ -3,13 +3,13 @@ import math
 import os
 import time
 from datetime import datetime
+from typing import List
 
 import matplotlib.pyplot as plt
 from bleak import BleakClient, BleakScanner
 from dotenv import load_dotenv
 from pydantic import Field
 from qiniu import Auth as QiniuAuth
-from qiniu import etag as QiniuEtag
 from qiniu import put_file as QiniuPutFile
 
 from mcp.ts_db import TsDB
@@ -39,7 +39,7 @@ def upload_file(file_path: str) -> str:
     key = f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
     token = q.upload_token(QINIU_BUCKET_NAME, key, 3600)
 
-    ret, info = QiniuPutFile(token, key, file_path, version='v2')
+    ret, info = QiniuPutFile(token, key, file_path, version="v2")
     print(ret)
     print(info)
     base_url = f"{QINIU_BUCKET_DOMAIN}/{key}"
@@ -49,12 +49,14 @@ def upload_file(file_path: str) -> str:
     else:
         return None
 
+
 # build a log method to log to the file
 
 
 def log(message: str):
     with open("mcp.log", "a") as f:
         f.write(f"{datetime.now()}: {message}\n")
+
 
 # redirect print to log
 
@@ -71,7 +73,7 @@ class BtClient:
 
     async def list_bluetooth_devices(self) -> dict[str, dict]:
         """Discover Bluetooth devices and filter by HRM profile. Returns a dic, key is the device id,
-value is a dict of device name and rssi."""
+        value is a dict of device name and rssi."""
 
         devices = await BleakScanner.discover(return_adv=True)
         result = {}
@@ -108,7 +110,9 @@ value is a dict of device name and rssi."""
         async with self.client:
             await self.client.connect()
             self.db.clear()
-            await self.client.start_notify(HR_MEASUREMENT_CHAR_UUID, self.count_heart_rate)
+            await self.client.start_notify(
+                HR_MEASUREMENT_CHAR_UUID, self.count_heart_rate
+            )
             # Keep listening for duration seconds
             await asyncio.sleep(duration)
             await self.client.stop_notify(HR_MEASUREMENT_CHAR_UUID)
@@ -125,8 +129,7 @@ value is a dict of device name and rssi."""
 
         # Heart Rate Value
         if hr_format_uint16:
-            heart_rate = int.from_bytes(
-                data[index:index+2], byteorder='little')
+            heart_rate = int.from_bytes(data[index : index + 2], byteorder="little")
             index += 2
         else:
             heart_rate = data[index]
@@ -151,7 +154,16 @@ value is a dict of device name and rssi."""
         # round up by ceilling to the nearest integer
         return {"avg_hr": math.ceil(self.db.avg(start_time, end_time))}
 
-    def get_heart_rate_bucket(self, since_from: float = Field(default=10.0, description="The start time of the monitoring, default 10 seconds ago"), bucket_size: float = Field(default=1.0, description="The size of the bucket, default 1 second")) -> List[dict]:
+    def get_heart_rate_bucket(
+        self,
+        since_from: float = Field(
+            default=10.0,
+            description="The start time of the monitoring, default 10 seconds ago",
+        ),
+        bucket_size: float = Field(
+            default=1.0, description="The size of the bucket, default 1 second"
+        ),
+    ) -> List[dict]:
         """Get the heart rate bucket of the given since_from time in seconds and bucket_size in seconds.
 
         Args:
@@ -172,10 +184,12 @@ value is a dict of device name and rssi."""
         buckets = self.db.time_bucket(start_time, end_time, bucket_size)
         result = []
         for t, v in buckets:
-            result.append({
-                "time": t,
-                "value": math.ceil(v),
-            })
+            result.append(
+                {
+                    "time": t,
+                    "value": math.ceil(v),
+                }
+            )
         return result
 
     # Tool: Evaluate Active Heart Rate
@@ -207,7 +221,6 @@ value is a dict of device name and rssi."""
         Returns:
             str: The URL of the chart image (PNG)
         """
-        import io
         bucket_size = 1
 
         bucket_len = since_from / bucket_size
@@ -216,7 +229,8 @@ value is a dict of device name and rssi."""
         else:
             bucket_size = 1
         data = self.get_heart_rate_bucket(
-            since_from=since_from, bucket_size=bucket_size)
+            since_from=since_from, bucket_size=bucket_size
+        )
         if not data:
             print("No heart rate data available for chart.")
             return ""
@@ -230,8 +244,9 @@ value is a dict of device name and rssi."""
         avg_hr = sum(values) / len(values)
         plt.figure(figsize=(12, 6))
         plt.plot(times, values, label="Heart Rate", marker="o")
-        plt.axhline(y=avg_hr, color="r", linestyle="--",
-                    label=f"Average HR: {avg_hr:.1f} bpm")
+        plt.axhline(
+            y=avg_hr, color="r", linestyle="--", label=f"Average HR: {avg_hr:.1f} bpm"
+        )
         plt.xlabel("Time")
         plt.ylabel("Heart Rate (bpm)")
         plt.title("Heart Rate Over Time (bucketed by 10s)")
