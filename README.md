@@ -1,14 +1,32 @@
 # ble-hrm-server
-A MCP server, which serve as a BLE heart rate monitoring to connect with a HRM device.
+A MCP server, which serve as a BLE **H**eart **Rate** **M**onitoring to connect with a HRM device.
 
 # Build Status
 [![CI](https://github.com/ThinkInAI-Hackathon/ble-hrm-server/actions/workflows/ci.yml/badge.svg)](https://github.com/ThinkInAI-Hackathon/ble-hrm-server/actions/workflows/ci.yml)
 
 
+# Installation
+
+We recommend using a virtual environment and `uv` to manage dependencies.
+
+This project uses `pyproject.toml` for dependency management.
+
+```bash
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+
+# Install uv if not already installed
+pip install uv
+
+# Install dependencies
+uv sync
+```
+
 # Usage
 
 ```bash
-uv run src/mcp/server.py
+uv run src/hcm/server.py
 ```
 
 # MCP Definition
