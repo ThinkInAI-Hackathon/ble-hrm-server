@@ -25,8 +25,23 @@ uv sync
 
 # Usage
 
+## Run the server
+
 ```bash
 uv run src/hcm/server.py
+```
+
+## Run the tests
+
+```bash
+uv run pytest
+```
+
+## Run the tests with coverage
+
+```bash
+uv run coverage run -m pytest
+uv run coverage html
 ```
 
 # MCP Definition
@@ -73,3 +88,12 @@ Bluetooth HRM is based on Bluetooth protocol, we should use `bleak` to discover 
   - Inputs:
     - since_from: float, the start time of the monitoring, default is 600 seconds ago
   - Outputs: Heart Rate Chart PNG URL: str, e.g. `https://example.com/chart.png`
+
+# Code Coverage
+
+| Name                    |    Stmts |     Miss |   Cover |
+|------------------------ | -------: | -------: | ------: |
+| src/hrm/\_\_init\_\_.py |        0 |        0 |    100% |
+| src/hrm/bt\_client.py   |      139 |        5 |     96% |
+| src/hrm/ts\_db.py       |       41 |        1 |     98% |
+|               **TOTAL** |  **180** |    **6** | **97%** |

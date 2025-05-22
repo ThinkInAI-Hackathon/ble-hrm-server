@@ -30,3 +30,8 @@ python_classes = "Test*"
 python_functions = "test_*"
 pythonpath = ["src"]
 asyncio_default_fixture_loop_scope = "session"
+
+[tool.coverage.run]
+omit = [
+    "tests/*"
+]
