@@ -1,7 +1,7 @@
 from fastmcp import FastMCP
 from fastmcp.resources import FunctionResource
 
-from mcp.bt_client import BtClient
+from hcm.bt_client import BtClient
 
 mcp = FastMCP(
     name="Bluetooth HRM MCP Server",

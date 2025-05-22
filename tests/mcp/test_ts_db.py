@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from mcp.ts_db import TsDB
+from hcm.ts_db import TsDB
 
 
 def test_insert_and_latest():

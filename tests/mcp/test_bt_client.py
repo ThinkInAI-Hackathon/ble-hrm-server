@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mcp.bt_client import HEART_RATE_SERVICE_UUID, BtClient
+from hcm.bt_client import HEART_RATE_SERVICE_UUID, BtClient
 
 
 @pytest.fixture(autouse=True)

@@ -12,7 +12,7 @@ from pydantic import Field
 from qiniu import Auth as QiniuAuth
 from qiniu import put_file as QiniuPutFile
 
-from mcp.ts_db import TsDB
+from hcm.ts_db import TsDB
 
 # Heart Rate Service UUID (16-bit: 0x180D, full 128-bit form)
 HEART_RATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb"
