@@ -12,7 +12,7 @@ from pydantic import Field
 from qiniu import Auth as QiniuAuth
 from qiniu import put_file as QiniuPutFile
 
-from hcm.ts_db import TsDB
+from hrm.ts_db import TsDB
 
 # Heart Rate Service UUID (16-bit: 0x180D, full 128-bit form)
 HEART_RATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb"
@@ -32,6 +32,11 @@ QINIU_BUCKET_DOMAIN = os.getenv("QINIU_BUCKET_DOMAIN")
 def upload_file(file_path: str) -> str:
     # if file_path is not a PNG file, return none
     if not file_path.endswith(".png"):
+        return None
+
+    # Check if all QINIU keys are defined
+    if not all([QINIU_ACCESS_KEY, QINIU_SECRET_KEY, QINIU_BUCKET_NAME, QINIU_BUCKET_DOMAIN]):
+        print("QINIU keys are not defined. Skipping upload.")
         return None
 
     q = QiniuAuth(QINIU_ACCESS_KEY, QINIU_SECRET_KEY)
