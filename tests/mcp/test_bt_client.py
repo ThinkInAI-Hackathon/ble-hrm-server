@@ -7,11 +7,6 @@ import pytest
 from hrm.bt_client import HEART_RATE_SERVICE_UUID, BtClient
 
 
-@pytest.fixture(autouse=True)
-def patch_print(monkeypatch):
-    # Patch the custom print to avoid file writes during tests
-    monkeypatch.setattr("hrm.bt_client.print", lambda msg: None)
-
 
 @pytest.fixture
 def bt_client():

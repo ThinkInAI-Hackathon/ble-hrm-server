@@ -1,6 +1,9 @@
 import asyncio
+import io
+import logging
 import math
 import os
+import tempfile
 import time
 from datetime import datetime
 from typing import List
@@ -28,6 +31,10 @@ QINIU_SECRET_KEY = os.getenv("QINIU_SECRET_KEY")
 QINIU_BUCKET_NAME = os.getenv("QINIU_BUCKET_NAME")
 QINIU_BUCKET_DOMAIN = os.getenv("QINIU_BUCKET_DOMAIN")
 
+# Set up logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 def upload_file(file_path: str) -> str:
     # if file_path is not a PNG file, return none
@@ -35,8 +42,10 @@ def upload_file(file_path: str) -> str:
         return None
 
     # Check if all QINIU keys are defined
-    if not all([QINIU_ACCESS_KEY, QINIU_SECRET_KEY, QINIU_BUCKET_NAME, QINIU_BUCKET_DOMAIN]):
-        print("QINIU keys are not defined. Skipping upload.")
+    if not all(
+        [QINIU_ACCESS_KEY, QINIU_SECRET_KEY, QINIU_BUCKET_NAME, QINIU_BUCKET_DOMAIN]
+    ):
+        logger.warning("QINIU keys are not defined. Skipping upload.")
         return None
 
     q = QiniuAuth(QINIU_ACCESS_KEY, QINIU_SECRET_KEY)
@@ -45,8 +54,7 @@ def upload_file(file_path: str) -> str:
     token = q.upload_token(QINIU_BUCKET_NAME, key, 3600)
 
     ret, info = QiniuPutFile(token, key, file_path, version="v2")
-    print(ret)
-    print(info)
+
     base_url = f"{QINIU_BUCKET_DOMAIN}/{key}"
     # private_url = q.private_download_url(base_url, expires=3600)
     if ret is not None:
@@ -55,24 +63,9 @@ def upload_file(file_path: str) -> str:
         return None
 
 
-# build a log method to log to the file
-
-
-def log(message: str):
-    with open("mcp.log", "a") as f:
-        f.write(f"{datetime.now()}: {message}\n")
-
-
-# redirect print to log
-
-
-def print(message: str):
-    log(message)
-
-
 class BtClient:
     def __init__(self):
-        print("BtClient initialized")
+        logger.info("BtClient initialized")
         # 50000 is the max length of the db
         self.db = TsDB(50000)
 
@@ -85,7 +78,7 @@ class BtClient:
         for device, adv_data in devices.values():
             if HEART_RATE_SERVICE_UUID in adv_data.service_uuids:
                 name = device.name or "N/A"
-                print(f"Device: {device.address}, {name}, {device.rssi}")
+                logger.info(f"Device: {device.address}, {name}, {device.rssi}")
                 result[device.address] = {
                     "name": name,
                     "rssi": device.rssi,
@@ -101,10 +94,10 @@ class BtClient:
             device_id: str, the device UUID to monitor
             duration: int, the duration to monitor, default is 1800 seconds (30 minutes)
         """
-        print(f"Monitoring heart rate of {device_id} for {duration} seconds")
+        logger.debug(f"Monitoring heart rate of {device_id} for {duration} seconds")
         self.client = BleakClient(device_id)
         if self.client.is_connected:
-            print(f"Already connected to {device_id}")
+            logger.warning(f"Already connected to {device_id}")
         else:
             asyncio.create_task(self.background_monitor(duration))
         return
@@ -122,7 +115,7 @@ class BtClient:
             await asyncio.sleep(duration)
             await self.client.stop_notify(HR_MEASUREMENT_CHAR_UUID)
             await self.client.disconnect()
-            print(f"Stopped monitoring heart rate of {self.client.address}")
+            logger.info(f"Stopped monitoring heart rate of {self.client.address}")
 
     def count_heart_rate(self, sender: int, data: bytearray):
         """Count heart rate value from notification payload."""
@@ -139,7 +132,7 @@ class BtClient:
         else:
             heart_rate = data[index]
             index += 1
-        # print(f"Heart Rate: {heart_rate} bpm")
+        logger.debug(f"Heart Rate: {heart_rate} bpm")
         self.db.insert(time.time(), heart_rate)
 
     # Tool: Get Heart Rate
@@ -237,14 +230,14 @@ class BtClient:
             since_from=since_from, bucket_size=bucket_size
         )
         if not data:
-            print("No heart rate data available for chart.")
+            logger.warning("No heart rate data available for chart.")
             return ""
         times = [d["time"] for d in data]
         # convert to datetime
         times = [datetime.fromtimestamp(t) for t in times]
         values = [d["value"] for d in data]
         if not values:
-            print("No heart rate values to plot.")
+            logger.warning("No heart rate values to plot.")
             return ""
         avg_hr = sum(values) / len(values)
         plt.figure(figsize=(12, 6))
@@ -257,14 +250,20 @@ class BtClient:
         plt.title("Heart Rate Over Time (bucketed by 10s)")
         plt.legend()
         plt.tight_layout()
-        # Save PNG for debugging
-        plt.savefig("debug.png", format="png")
-        print("Debug PNG chart saved as debug.png")
-        key = upload_file("debug.png")
-        print(f"Debug PNG chart uploaded to {key}")
-        # svg_buffer = io.StringIO()
-        # plt.savefig(svg_buffer, format="svg")
-        # plt.close()
-        # svg_content = svg_buffer.getvalue()
-        # svg_buffer.close()
+        # Save PNG for debugging, the file should in tmp folder
+        tmp_dir = tempfile.gettempdir()
+        debug_file = os.path.join(tmp_dir, f"debug_{time.time()}.png")
+        plt.savefig(debug_file, format="png")
+        # full path of debug.png
+        logger.debug(f"Debug PNG chart saved as {debug_file}")
+        key = upload_file(debug_file)
+        if key:
+            logger.info(f"Debug PNG chart uploaded to {key}")
+        else:
+            logger.error("Failed to upload debug PNG chart")
+            svg_buffer = io.StringIO()
+            plt.savefig(svg_buffer, format="svg")
+            plt.close()
+            key = svg_buffer.getvalue()
+            svg_buffer.close()
         return key
