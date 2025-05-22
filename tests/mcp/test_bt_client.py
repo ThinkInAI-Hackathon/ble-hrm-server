@@ -4,13 +4,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from hcm.bt_client import HEART_RATE_SERVICE_UUID, BtClient
+from hrm.bt_client import HEART_RATE_SERVICE_UUID, BtClient
 
 
 @pytest.fixture(autouse=True)
 def patch_print(monkeypatch):
     # Patch the custom print to avoid file writes during tests
-    monkeypatch.setattr("mcp.bt_client.print", lambda msg: None)
+    monkeypatch.setattr("hrm.bt_client.print", lambda msg: None)
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ async def test_list_bluetooth_devices(bt_client):
     adv_data.service_uuids = [HEART_RATE_SERVICE_UUID]
     devices = {("dev", 1): (fake_device, adv_data)}
     with patch(
-        "mcp.bt_client.BleakScanner.discover", new=AsyncMock(return_value=devices)
+        "hrm.bt_client.BleakScanner.discover", new=AsyncMock(return_value=devices)
     ):
         result = await bt_client.list_bluetooth_devices()
         assert fake_device.address in result
@@ -39,8 +39,8 @@ async def test_list_bluetooth_devices(bt_client):
 @pytest.mark.asyncio
 async def test_monitoring_heart_rate_creates_task(bt_client):
     with (
-        patch("mcp.bt_client.BleakClient") as MockBleakClient,
-        patch("mcp.bt_client.asyncio.create_task") as mock_create_task,
+        patch("hrm.bt_client.BleakClient") as MockBleakClient,
+        patch("hrm.bt_client.asyncio.create_task") as mock_create_task,
     ):
         mock_client = MockBleakClient.return_value
         mock_client.is_connected = False
@@ -69,8 +69,8 @@ async def test_monitoring_heart_rate_creates_task(bt_client):
 @pytest.mark.asyncio
 async def test_monitoring_heart_rate_already_connected(bt_client):
     with (
-        patch("mcp.bt_client.BleakClient") as MockBleakClient,
-        patch("mcp.bt_client.asyncio.create_task") as mock_create_task,
+        patch("hrm.bt_client.BleakClient") as MockBleakClient,
+        patch("hrm.bt_client.asyncio.create_task") as mock_create_task,
     ):
         mock_client = MockBleakClient.return_value
         mock_client.is_connected = True
@@ -159,8 +159,8 @@ def test_evaluate_active_heart_rate(bt_client, data, expected):
         assert result == expected
 
 
-@patch("mcp.bt_client.upload_file", return_value="http://fake.url/chart.png")
-@patch("mcp.bt_client.plt")
+@patch("hrm.bt_client.upload_file", return_value="http://fake.url/chart.png")
+@patch("hrm.bt_client.plt")
 def test_build_heart_rate_chart(mock_plt, mock_upload_file, bt_client):
     # Patch get_heart_rate_bucket to return fake data
     with patch.object(
