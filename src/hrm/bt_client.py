@@ -24,19 +24,18 @@ HEART_RATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb"
 HR_MEASUREMENT_CHAR_UUID = "00002a37-0000-1000-8000-00805f9b34fb"
 
 
-# load QINIU_ACCESS_KEY and QINIU_SECRET_KEY from `.env` file
-load_dotenv()
-QINIU_ACCESS_KEY = os.getenv("QINIU_ACCESS_KEY")
-QINIU_SECRET_KEY = os.getenv("QINIU_SECRET_KEY")
-QINIU_BUCKET_NAME = os.getenv("QINIU_BUCKET_NAME")
-QINIU_BUCKET_DOMAIN = os.getenv("QINIU_BUCKET_DOMAIN")
-
 # Set up logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
 def upload_file(file_path: str) -> str:
+    """Upload a file to QINIU Storage, it will let DeepChat to download the file."""
+    load_dotenv()
+    QINIU_ACCESS_KEY = os.getenv("QINIU_ACCESS_KEY")
+    QINIU_SECRET_KEY = os.getenv("QINIU_SECRET_KEY")
+    QINIU_BUCKET_NAME = os.getenv("QINIU_BUCKET_NAME")
+    QINIU_BUCKET_DOMAIN = os.getenv("QINIU_BUCKET_DOMAIN")
     # if file_path is not a PNG file, return none
     if not file_path.endswith(".png"):
         return None

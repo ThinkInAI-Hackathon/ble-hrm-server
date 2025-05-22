@@ -4,8 +4,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from hrm.bt_client import HEART_RATE_SERVICE_UUID, BtClient
+from hrm.bt_client import HEART_RATE_SERVICE_UUID, BtClient, upload_file
 
+import os
 
 
 @pytest.fixture
@@ -174,3 +175,59 @@ def test_build_heart_rate_chart(mock_plt, mock_upload_file, bt_client):
     with patch.object(bt_client, "get_heart_rate_bucket", return_value=[]):
         url = bt_client.build_heart_rate_chart(since_from=2.0)
         assert url == ""
+
+
+@patch("hrm.bt_client.upload_file", return_value=None)
+@patch("hrm.bt_client.plt")
+def test_build_heart_rate_chart_upload_fail(mock_plt, mock_upload_file, bt_client):
+    # Patch get_heart_rate_bucket to return fake data
+    with patch.object(
+        bt_client,
+        "get_heart_rate_bucket",
+        return_value=[{"time": 1, "value": 60}, {"time": 2, "value": 70}],
+    ):
+        # Mock plt.savefig to write SVG content to the buffer
+        def fake_savefig(buf, format=None):
+            if hasattr(buf, "write"):
+                buf.write("<svg>mocked</svg>")
+        mock_plt.savefig.side_effect = fake_savefig
+        # Call the method
+        result = bt_client.build_heart_rate_chart(since_from=2.0)
+        assert result.startswith("<svg")
+        mock_upload_file.assert_called()
+        mock_plt.savefig.assert_called()
+
+
+def test_upload_file_success(monkeypatch):
+    # Set up environment variables
+    monkeypatch.setenv("QINIU_ACCESS_KEY", "fake_key")
+    monkeypatch.setenv("QINIU_SECRET_KEY", "fake_secret")
+    monkeypatch.setenv("QINIU_BUCKET_NAME", "fake_bucket")
+    monkeypatch.setenv("QINIU_BUCKET_DOMAIN", "http://fake.domain")
+
+    # Patch QiniuAuth and QiniuPutFile
+    with patch("hrm.bt_client.QiniuAuth") as MockAuth, \
+         patch("hrm.bt_client.QiniuPutFile", return_value=({"key": "somekey"}, MagicMock())) as mock_put_file:
+        mock_auth_instance = MockAuth.return_value
+        mock_auth_instance.upload_token.return_value = "fake_token"
+        file_path = "/tmp/test.png"
+        url = upload_file(file_path)
+        assert url.startswith("http://fake.domain/")
+        mock_put_file.assert_called_once()
+
+
+def test_upload_file_missing_keys(monkeypatch):
+    # Unset environment variables
+    monkeypatch.delenv("QINIU_ACCESS_KEY", raising=False)
+    monkeypatch.delenv("QINIU_SECRET_KEY", raising=False)
+    monkeypatch.delenv("QINIU_BUCKET_NAME", raising=False)
+    monkeypatch.delenv("QINIU_BUCKET_DOMAIN", raising=False)
+    file_path = "/tmp/test.png"
+    url = upload_file(file_path)
+    assert url is None
+
+
+def test_upload_file_non_png():
+    file_path = "/tmp/test.txt"
+    url = upload_file(file_path)
+    assert url is None

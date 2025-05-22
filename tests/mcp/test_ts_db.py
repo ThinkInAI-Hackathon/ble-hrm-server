@@ -109,3 +109,23 @@ def test_time_bucket():
         (3.0, 30.0),
         (3.5, 32.0),
     ]
+
+
+def test_query_invalid_range():
+    db = TsDB()
+    db.insert(1.0, 10.0)
+    db.insert(2.0, 20.0)
+    with pytest.raises(ValueError, match="Start timestamp must be less than end timestamp"):
+        db.query(2.0, 2.0)
+    with pytest.raises(ValueError, match="Start timestamp must be less than end timestamp"):
+        db.query(3.0, 2.0)
+
+
+def test_time_bucket_invalid_bucket_size():
+    db = TsDB()
+    db.insert(1.0, 10.0)
+    db.insert(2.0, 20.0)
+    with pytest.raises(ValueError, match="Bucket size must be greater than 0"):
+        db.time_bucket(1.0, 2.0, 0)
+    with pytest.raises(ValueError, match="Bucket size must be greater than 0"):
+        db.time_bucket(1.0, 2.0, -1)
