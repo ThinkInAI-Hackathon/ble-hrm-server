@@ -23,6 +23,21 @@ pip install uv
 uv sync
 ```
 
+# Environment Configuration
+
+This project supports configuration via a `.env` file. You can use the provided `.env.sample` as a template.
+
+```bash
+cp .env.sample .env
+```
+
+The following environment variables are used:
+
+- `QINIU_ACCESS_KEY`: Your Qiniu access key.
+- `QINIU_SECRET_KEY`: Your Qiniu secret key.
+- `QINIU_BUCKET_NAME`: The name of the Qiniu bucket.
+- `QINIU_BUCKET_DOMAIN`: The domain associated with the Qiniu bucket.
+
 # Usage
 
 ## Run the server
