@@ -222,7 +222,7 @@ class BtClient:
 
         bucket_len = since_from / bucket_size
         if bucket_len > 60:
-            bucket_size = int(since_from / 60)
+            bucket_size = math.ceil(since_from / 60)
         else:
             bucket_size = 1
         data = self.get_heart_rate_bucket(
