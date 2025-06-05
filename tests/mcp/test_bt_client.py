@@ -198,6 +198,20 @@ def test_build_heart_rate_chart_upload_fail(mock_plt, mock_upload_file, bt_clien
         mock_plt.savefig.assert_called()
 
 
+@patch("hrm.bt_client.upload_file", return_value="http://fake.url/chart.png")
+@patch("hrm.bt_client.plt")
+def test_build_heart_rate_chart_bucket_size(mock_plt, mock_upload_file, bt_client):
+    with patch.object(
+        bt_client,
+        "get_heart_rate_bucket",
+        return_value=[{"time": 1, "value": 60}],
+    ) as mock_bucket:
+        since = 100.0
+        url = bt_client.build_heart_rate_chart(since_from=since)
+        assert url == "http://fake.url/chart.png"
+        mock_bucket.assert_called_once_with(since_from=since, bucket_size=math.ceil(since / 60))
+
+
 def test_upload_file_success(monkeypatch):
     # Set up environment variables
     monkeypatch.setenv("QINIU_ACCESS_KEY", "fake_key")
