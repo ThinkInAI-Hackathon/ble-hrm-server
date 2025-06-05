@@ -6,7 +6,7 @@ import os
 import tempfile
 import time
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 from bleak import BleakClient, BleakScanner
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def upload_file(file_path: str) -> str:
+def upload_file(file_path: str) -> Optional[str]:
     """Upload a file to QINIU Storage, it will let DeepChat to download the file."""
     load_dotenv()
     QINIU_ACCESS_KEY = os.getenv("QINIU_ACCESS_KEY")
@@ -67,6 +67,7 @@ class BtClient:
         logger.info("BtClient initialized")
         # 50000 is the max length of the db
         self.db = TsDB(50000)
+        self.client: Optional[BleakClient] = None
 
     async def list_bluetooth_devices(self) -> dict[str, dict]:
         """Discover Bluetooth devices and filter by HRM profile. Returns a dic, key is the device id,
@@ -105,7 +106,6 @@ class BtClient:
         if not self.client:
             return
         async with self.client:
-            await self.client.connect()
             self.db.clear()
             await self.client.start_notify(
                 HR_MEASUREMENT_CHAR_UUID, self.count_heart_rate
@@ -113,7 +113,6 @@ class BtClient:
             # Keep listening for duration seconds
             await asyncio.sleep(duration)
             await self.client.stop_notify(HR_MEASUREMENT_CHAR_UUID)
-            await self.client.disconnect()
             logger.info(f"Stopped monitoring heart rate of {self.client.address}")
 
     def count_heart_rate(self, sender: int, data: bytearray):
@@ -258,6 +257,7 @@ class BtClient:
         key = upload_file(debug_file)
         if key:
             logger.info(f"Debug PNG chart uploaded to {key}")
+            plt.close()
         else:
             logger.error("Failed to upload debug PNG chart")
             svg_buffer = io.StringIO()
