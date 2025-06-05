@@ -148,7 +148,7 @@ class BtClient:
         start_time = time.time() - 10
         end_time = start_time + 10
 
-        # round up by ceilling to the nearest integer
+        # round up by ceiling to the nearest integer
         return {"avg_hr": math.ceil(self.db.avg(start_time, end_time))}
 
     def get_heart_rate_bucket(
