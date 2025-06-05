@@ -139,6 +139,16 @@ def test_get_heart_rate_bucket(bt_client, data, expected):
         assert result == [{"time": d[0], "value": math.ceil(d[1])} for d in data]
 
 
+def test_get_heart_rate_bucket_defaults(bt_client):
+    with (
+        patch("time.time", return_value=10.0),
+        patch.object(bt_client.db, "time_bucket", return_value=[(1.0, 60.0)]) as mock_tb,
+    ):
+        result = bt_client.get_heart_rate_bucket()
+        assert result == [{"time": 1.0, "value": 60}]
+        mock_tb.assert_called_once_with(0.0, 10.0, 1.0)
+
+
 @pytest.mark.parametrize(
     "data,expected",
     [
