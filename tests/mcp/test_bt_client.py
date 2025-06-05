@@ -78,8 +78,8 @@ async def test_monitoring_heart_rate_already_connected(bt_client):
 async def test_background_monitor(bt_client):
     # Patch client and its methods
     mock_client = MagicMock()
-    mock_client.__aenter__.return_value = mock_client
-    mock_client.__aexit__.return_value = None
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
     mock_client.connect = AsyncMock()
     mock_client.start_notify = AsyncMock()
     mock_client.stop_notify = AsyncMock()
@@ -87,11 +87,13 @@ async def test_background_monitor(bt_client):
     bt_client.client = mock_client
     with patch.object(bt_client.db, "clear") as mock_clear:
         await bt_client.background_monitor(duration=0.01)
-        mock_client.connect.assert_called_once()
+        mock_client.__aenter__.assert_called_once()
         mock_client.start_notify.assert_called_once()
         mock_client.stop_notify.assert_called_once()
-        mock_client.disconnect.assert_called_once()
+        mock_client.__aexit__.assert_called_once()
         mock_clear.assert_called_once()
+        mock_client.connect.assert_not_called()
+        mock_client.disconnect.assert_not_called()
 
 
 @pytest.mark.parametrize(
