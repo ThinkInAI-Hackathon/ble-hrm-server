@@ -112,3 +112,7 @@ Bluetooth HRM is based on Bluetooth protocol, we should use `bleak` to discover 
 | src/hrm/bt\_client.py   |      139 |        5 |     96% |
 | src/hrm/ts\_db.py       |       41 |        1 |     98% |
 |               **TOTAL** |  **180** |    **6** | **97%** |
+
+## Sponsor
+
+[![Qiniu Cloud](https://raw.githubusercontent.com/qiniu/developer.qiniu.com/develop/_src/image/logo-bg.png)](https://www.qiniu.com)
