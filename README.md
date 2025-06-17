@@ -43,7 +43,14 @@ The following environment variables are used:
 ## Run the server
 
 ```bash
-uv run src/hcm/server.py
+uv run src/hrm/server.py
+```
+
+After installing from PyPI you can also run the server directly using
+`uvx`:
+
+```bash
+uvx ble-hrm-server
 ```
 
 ## Run the tests
