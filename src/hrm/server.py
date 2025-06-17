@@ -16,7 +16,7 @@ mcp.add_resource(
     FunctionResource(
         uri="discover://hrm",
         name="HRM Device",
-        text="Bluetooth Heart Rate Monitor Devices",
+        description="Bluetooth Heart Rate Monitor Devices",
         fn=cli.list_bluetooth_devices,
     )
 )
