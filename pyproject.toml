@@ -16,6 +16,9 @@ dependencies = [
     "qiniu>=7.16.0",
 ]
 
+[project.scripts]
+ble-hrm-server = "hrm.__main__:main"
+
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.0.0",
