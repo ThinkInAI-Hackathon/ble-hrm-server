@@ -6,8 +6,6 @@ import pytest
 
 from hrm.bt_client import HEART_RATE_SERVICE_UUID, BtClient, upload_file
 
-import os
-
 
 @pytest.fixture
 def bt_client():
@@ -192,6 +190,7 @@ def test_build_heart_rate_chart_upload_fail(mock_plt, mock_upload_file, bt_clien
         def fake_savefig(buf, format=None):
             if hasattr(buf, "write"):
                 buf.write("<svg>mocked</svg>")
+
         mock_plt.savefig.side_effect = fake_savefig
         # Call the method
         result = bt_client.build_heart_rate_chart(since_from=2.0)
@@ -211,7 +210,9 @@ def test_build_heart_rate_chart_bucket_size(mock_plt, mock_upload_file, bt_clien
         since = 100.0
         url = bt_client.build_heart_rate_chart(since_from=since)
         assert url == "http://fake.url/chart.png"
-        mock_bucket.assert_called_once_with(since_from=since, bucket_size=math.ceil(since / 60))
+        mock_bucket.assert_called_once_with(
+            since_from=since, bucket_size=math.ceil(since / 60)
+        )
 
 
 def test_upload_file_success(monkeypatch):
@@ -222,8 +223,12 @@ def test_upload_file_success(monkeypatch):
     monkeypatch.setenv("QINIU_BUCKET_DOMAIN", "http://fake.domain")
 
     # Patch QiniuAuth and QiniuPutFile
-    with patch("hrm.bt_client.QiniuAuth") as MockAuth, \
-         patch("hrm.bt_client.QiniuPutFile", return_value=({"key": "somekey"}, MagicMock())) as mock_put_file:
+    with (
+        patch("hrm.bt_client.QiniuAuth") as MockAuth,
+        patch(
+            "hrm.bt_client.QiniuPutFile", return_value=({"key": "somekey"}, MagicMock())
+        ) as mock_put_file,
+    ):
         mock_auth_instance = MockAuth.return_value
         mock_auth_instance.upload_token.return_value = "fake_token"
         file_path = "/tmp/test.png"

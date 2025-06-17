@@ -59,7 +59,9 @@ class TsDB:
         """
         self.data.clear()
 
-    def time_bucket(self, start: float, end: float, bucket_size: float) -> List[tuple[float, float]]:
+    def time_bucket(
+        self, start: float, end: float, bucket_size: float
+    ) -> List[tuple[float, float]]:
         """
         Bucket the data from the given start timestamp to the given end timestamp into the given time bucket size.
         """
