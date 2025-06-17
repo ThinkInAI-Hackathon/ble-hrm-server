@@ -115,9 +115,13 @@ def test_query_invalid_range():
     db = TsDB()
     db.insert(1.0, 10.0)
     db.insert(2.0, 20.0)
-    with pytest.raises(ValueError, match="Start timestamp must be less than end timestamp"):
+    with pytest.raises(
+        ValueError, match="Start timestamp must be less than end timestamp"
+    ):
         db.query(2.0, 2.0)
-    with pytest.raises(ValueError, match="Start timestamp must be less than end timestamp"):
+    with pytest.raises(
+        ValueError, match="Start timestamp must be less than end timestamp"
+    ):
         db.query(3.0, 2.0)
 
 
