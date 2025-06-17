@@ -46,8 +46,7 @@ The following environment variables are used:
 uv run src/hrm/server.py
 ```
 
-After installing from PyPI you can also run the server directly using
-`uvx`:
+After installing from PyPI, you can run the server directly using:
 
 ```bash
 uvx ble-hrm-server
@@ -110,6 +109,45 @@ Bluetooth HRM is based on Bluetooth protocol, we should use `bleak` to discover 
   - Inputs:
     - since_from: float, the start time of the monitoring, default is 600 seconds ago
   - Outputs: Heart Rate Chart PNG URL: str, e.g. `https://example.com/chart.png`
+
+
+# MCP Settings
+
+Here is the MCP settings for the server:
+
+```json
+{
+  "mcpServers": {
+    "blue-hrm": {
+      "command": "uvx",
+      "args": [
+        "ble-hrm-server"
+      ]
+    }
+  }
+}
+```
+
+Here is a sample prompt for the LLM tested by DeepSeek V3.1:
+
+```
+你是一位健康专家，通过心率来检测测试者的心脏健康程度，现在测试者携带了蓝牙的心率带，
+
+以下为检测步骤
+- 你通过发现来获取的设备ID,通过rssi获取最接近的设备，再以此设备开始监控。
+- 获取当前测试者的静息心率。
+- 当测试结束后，提示测试者开始中高强度运动，比如波比跳，当测试者完成运动后，回复后，立刻测试其最高运动心率。
+- 之后提示测试者计时休息2分钟，得到确认后，再次获取当前心率，并与最高心率的差额作为恢复心率。 
+
+最后通过恢复心率的值和以下列表评估测试者的心脏健康程度，并用健康专家的口吻给测试者一些关于心脏健康方面的建议。
+------
+- <22: 身体年龄略大于 真实年龄
+- 22～52: 身体年龄= 真实年龄 
+- 53～58: 身体年龄略小于真实年龄 
+- 59～65: 身体年龄比真实年龄小 
+- >=66: 身体年龄比真实年龄小很多
+```
+
 
 # Code Coverage
 
