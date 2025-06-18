@@ -11,7 +11,6 @@ from typing import List, Optional
 import matplotlib.pyplot as plt
 from bleak import BleakClient, BleakScanner
 from dotenv import load_dotenv
-from pydantic import Field
 from qiniu import Auth as QiniuAuth
 from qiniu import put_file as QiniuPutFile
 
@@ -152,13 +151,8 @@ class BtClient:
 
     def get_heart_rate_bucket(
         self,
-        since_from: float = Field(
-            default=10.0,
-            description="The start time of the monitoring, default 10 seconds ago",
-        ),
-        bucket_size: float = Field(
-            default=1.0, description="The size of the bucket, default 1 second"
-        ),
+        since_from: float = 10.0,
+        bucket_size: float = 1.0,
     ) -> List[dict]:
         """Get the heart rate bucket of the given since_from time in seconds and bucket_size in seconds.
 
